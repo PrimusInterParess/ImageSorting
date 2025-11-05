@@ -19,6 +19,11 @@ Projects
 - ImageSorting.API: Web API exposing local and Azure Blob workflows. Swagger UI enabled.
 - ImageSorting: Console app to run sorting locally.
 
+Architecture
+
+- Core contains the application services and models (local sort and Azure Blob browse/upload/sort). The API and Console reference Core.
+- The API wires dependencies via DI and provides HTTP endpoints over Core services. `BlobServiceClient` is created in the API and injected into Core services.
+
 Prerequisites
 
 - .NET 8 SDK

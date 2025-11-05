@@ -1,4 +1,4 @@
-namespace ImageSorting.API.Models
+namespace ImageSorting.Core.Models
 {
 	public record BlobItemInfo(
 		string Name,
@@ -22,6 +22,5 @@ namespace ImageSorting.API.Models
 		IReadOnlyList<string> Items
 	);
 }
-
 
 

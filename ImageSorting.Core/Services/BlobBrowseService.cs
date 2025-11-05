@@ -1,16 +1,9 @@
 using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
-using ImageSorting.API.Models;
+using ImageSorting.Core.Interfaces;
+using ImageSorting.Core.Models;
 
-namespace ImageSorting.API.Services
+namespace ImageSorting.Core.Services
 {
-	public interface IBlobBrowseService
-	{
-		Task<IReadOnlyList<string>> ListContainersAsync(CancellationToken ct);
-		Task<IReadOnlyList<string>> ListPrefixesAsync(string container, string? prefix, CancellationToken ct);
-		Task<BlobListResponse> ListAsync(string container, string? prefix, CancellationToken ct);
-	}
-
 	public class BlobBrowseService : IBlobBrowseService
 	{
 		private readonly BlobServiceClient _blobServiceClient;
@@ -87,6 +80,5 @@ namespace ImageSorting.API.Services
 		}
 	}
 }
-
 
 

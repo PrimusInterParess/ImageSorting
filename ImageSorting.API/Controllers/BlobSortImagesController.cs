@@ -1,5 +1,5 @@
-using ImageSorting.API.Models;
-using ImageSorting.API.Services;
+using ImageSorting.Core.Models;
+using ImageSorting.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ImageSorting.API.Controllers
