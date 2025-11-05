@@ -1,0 +1,14 @@
+# IDE
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build outputs
+bin/
+obj/
+
+# Optional
+.vscode/
+.idea/
