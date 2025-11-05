@@ -1,7 +1,8 @@
+using Azure.Storage.Blobs;
+using ImageSorting.Core;
 using ImageSorting.Core.Interfaces;
 using ImageSorting.Core.Options;
 using ImageSorting.Core.Services;
-using Azure.Storage.Blobs;
 
 var builder = WebApplication.CreateBuilder(args);
 

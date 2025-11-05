@@ -40,6 +40,7 @@ How it works (high level)
    - EXIF SubIFD: DateTimeOriginal, DateTimeDigitized
    - EXIF IFD0: DateTime
    - QuickTime headers (for HEIC/HEIF and many videos)
+   - For blob sources, the content stream is buffered to a seekable stream to ensure reliable file-type detection and metadata parsing
 2) If no metadata date is found, fall back to filesystem or blob last-modified time.
 3) Build destination path/prefix: `<Year>/<MM - MonthName>`.
 4) Avoid overwriting: if the name exists, append “(1)”, “(2)”, …
@@ -117,6 +118,16 @@ Response:
 
 ```json
 { "count": 3, "items": ["2024", "2025/01 - January", "raw"] }
+```
+
+GET /api/blob/prefixes/all?container={name}
+
+- Lists all virtual folders (prefixes) recursively within a container.
+
+Response:
+
+```json
+{ "count": 5, "items": ["2024", "2024/01 - January", "2025", "2025/11 - November", "raw"] }
 ```
 
 GET /api/blob/list?container={name}&prefix={optional}
@@ -199,6 +210,7 @@ Blob browse and upload:
 ```powershell
 Invoke-RestMethod -Method Get http://localhost:5148/api/blob/containers
 Invoke-RestMethod -Method Get "http://localhost:5148/api/blob/prefixes?container=photos"
+Invoke-RestMethod -Method Get "http://localhost:5148/api/blob/prefixes/all?container=photos"
 Invoke-RestMethod -Method Get "http://localhost:5148/api/blob/list?container=photos&prefix=incoming/2025/11"
 ```
 

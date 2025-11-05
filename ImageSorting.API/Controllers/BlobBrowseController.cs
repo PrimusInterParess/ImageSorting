@@ -45,6 +45,18 @@ namespace ImageSorting.API.Controllers
 			var items = await _browseService.ListPrefixesAsync(container, prefix, ct);
 			return Ok(new PrefixListResponse(items.Count, items));
 		}
+
+		[HttpGet("prefixes/all")]
+		public async Task<ActionResult<PrefixListResponse>> ListAllPrefixesAsync([FromQuery] string container, CancellationToken ct)
+		{
+			if (string.IsNullOrWhiteSpace(container))
+			{
+				return BadRequest("container is required");
+			}
+
+			var items = await _browseService.ListAllPrefixesAsync(container, ct);
+			return Ok(new PrefixListResponse(items.Count, items));
+		}
 	}
 }
 

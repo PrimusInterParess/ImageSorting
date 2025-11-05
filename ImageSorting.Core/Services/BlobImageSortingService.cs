@@ -114,8 +114,11 @@ namespace ImageSorting.Core.Services
 			try
 			{
 				var download = await blob.DownloadStreamingAsync(cancellationToken: ct);
-				using var content = download.Value.Content;
-				var directories = ImageMetadataReader.ReadMetadata(content);
+				await using var networkStream = download.Value.Content;
+				using var buffer = new MemoryStream();
+				await networkStream.CopyToAsync(buffer, ct);
+				buffer.Position = 0;
+				var directories = ImageMetadataReader.ReadMetadata(buffer, blob.Name);
 
 				if (TryGetDate(() => directories.OfType<ExifSubIfdDirectory>().FirstOrDefault()?.GetDateTime(ExifDirectoryBase.TagDateTimeOriginal), out var dt) && dt.HasValue) return dt.Value;
 				if (TryGetDate(() => directories.OfType<ExifSubIfdDirectory>().FirstOrDefault()?.GetDateTime(ExifDirectoryBase.TagDateTimeDigitized), out dt) && dt.HasValue) return dt.Value;

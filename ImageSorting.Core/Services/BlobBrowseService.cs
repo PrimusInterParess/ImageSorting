@@ -47,6 +47,39 @@ namespace ImageSorting.Core.Services
 			return list;
 		}
 
+		public async Task<IReadOnlyList<string>> ListAllPrefixesAsync(string container, CancellationToken ct)
+		{
+			if (string.IsNullOrWhiteSpace(container))
+			{
+				throw new ArgumentException("Container is required");
+			}
+
+			var containerClient = _blobServiceClient.GetBlobContainerClient(container);
+			var seen = new HashSet<string>(StringComparer.Ordinal);
+			var queue = new Queue<string?>();
+			queue.Enqueue(null);
+
+			while (queue.Count > 0)
+			{
+				var current = queue.Dequeue();
+				await foreach (var item in containerClient.GetBlobsByHierarchyAsync(prefix: current, delimiter: "/", cancellationToken: ct))
+				{
+					if (item.IsPrefix && !string.IsNullOrWhiteSpace(item.Prefix))
+					{
+						var p = item.Prefix.TrimEnd('/');
+						if (seen.Add(p))
+						{
+							queue.Enqueue(item.Prefix);
+						}
+					}
+				}
+			}
+
+			var all = new List<string>(seen);
+			all.Sort(StringComparer.Ordinal);
+			return all;
+		}
+
 		public async Task<BlobListResponse> ListAsync(string container, string? prefix, CancellationToken ct)
 		{
 			if (string.IsNullOrWhiteSpace(container))

@@ -6,6 +6,7 @@ namespace ImageSorting.Core.Interfaces
 	{
 		Task<IReadOnlyList<string>> ListContainersAsync(CancellationToken ct);
 		Task<IReadOnlyList<string>> ListPrefixesAsync(string container, string? prefix, CancellationToken ct);
+		Task<IReadOnlyList<string>> ListAllPrefixesAsync(string container, CancellationToken ct);
 		Task<BlobListResponse> ListAsync(string container, string? prefix, CancellationToken ct);
 	}
 }
