@@ -16,7 +16,9 @@ Direction of the app
 Projects
 
 - ImageSorting.Core: Sorting logic, options, and interfaces. Uses MetadataExtractor.
+- ImageSorting.Data: EF Core entities, DbContext, and migrations used for persisted uploads/metadata.
 - ImageSorting.API: Web API exposing local and Azure Blob workflows. Swagger UI enabled.
+- ImageSorting.Web: Angular 18 web UI for browsing blobs, uploading, and previewing media.
 - ImageSorting: Console app to run sorting locally.
 
 Architecture
@@ -40,7 +42,6 @@ How it works (high level)
    - EXIF SubIFD: DateTimeOriginal, DateTimeDigitized
    - EXIF IFD0: DateTime
    - QuickTime headers (for HEIC/HEIF and many videos)
-   - For blob sources, the content stream is buffered to a seekable stream to ensure reliable file-type detection and metadata parsing
 2) If no metadata date is found, fall back to filesystem or blob last-modified time.
 3) Build destination path/prefix: `<Year>/<MM - MonthName>`.
 4) Avoid overwriting: if the name exists, append “(1)”, “(2)”, …
@@ -59,7 +60,7 @@ dotnet run --project ImageSorting.API
 
 Configuration
 
-`ImageSorting.API/appsettings.Development.json` defaults Azure Storage to emulator:
+`ImageSorting.API/appsettings.Development.json` defaults Azure Storage to emulator and includes a local SQL Server connection string:
 
 ```json
 {
@@ -68,11 +69,24 @@ Configuration
   },
   "Sorting": {
     "DefaultLogDirectory": "D:\\Library\\Documentation for sorting"
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=.;Database=ImageSorting;Trusted_Connection=True;TrustServerCertificate=True"
   }
 }
 ```
 
-For production, set `AzureStorage:ConnectionString` to your storage account connection string (or via environment variables).
+For production, set `AzureStorage:ConnectionString` to your storage account connection string (or via environment variables). Configure `ConnectionStrings:DefaultConnection` for SQL Server when using metadata‑persisting endpoints.
+
+Database (for metadata persistence)
+
+- The API registers `ImageSortingContext` using `ConnectionStrings:DefaultConnection`.
+- Apply migrations before using the metadata‑persisting upload endpoint:
+
+```bash
+dotnet tool install -g dotnet-ef # if not already installed
+dotnet ef database update --project ImageSorting.Data --startup-project ImageSorting.API
+```
 
 API – Local filesystem sorting
 
@@ -120,16 +134,6 @@ Response:
 { "count": 3, "items": ["2024", "2025/01 - January", "raw"] }
 ```
 
-GET /api/blob/prefixes/all?container={name}
-
-- Lists all virtual folders (prefixes) recursively within a container.
-
-Response:
-
-```json
-{ "count": 5, "items": ["2024", "2024/01 - January", "2025", "2025/11 - November", "raw"] }
-```
-
 GET /api/blob/list?container={name}&prefix={optional}
 
 Response:
@@ -158,6 +162,27 @@ Response:
 
 ```json
 { "uploaded": 3, "items": ["incoming/2025/11/a.jpg", "incoming/2025/11/b.jpg", "incoming/2025/11/c.jpg"] }
+```
+
+POST /api/upload/blob-with-metadata (multipart/form-data)
+
+- Same form fields as above.
+- Extracts basic file metadata and persists a record to the database for each upload (requires a valid `DefaultConnection` and applied migrations).
+
+Response:
+
+```json
+{
+  "uploaded": 3,
+  "items": [
+    {
+      "blobName": "incoming/2025/11/a.jpg",
+      "metadata": { "bestDateTakenUtc": "2025-11-05T10:00:00Z", "contentType": "image/jpeg", "width": 4000, "height": 3000 }
+    },
+    { "blobName": "incoming/2025/11/b.jpg", "metadata": { /* ... */ } },
+    { "blobName": "incoming/2025/11/c.jpg", "metadata": { /* ... */ } }
+  ]
+}
 ```
 
 Notes on `prefix`
@@ -194,6 +219,18 @@ Response (JSON):
 { "moved": 120, "skipped": 0, "errors": 3, "logBlobPath": "photos-logs/runs/120 - 11.txt" }
 ```
 
+API – Azure Blob content streaming
+
+GET /api/blob/content?container={name}&name={blobPath}
+
+- Streams the blob bytes with the original `Content-Type`. Useful for inline image/video rendering in the web app.
+
+Example:
+
+```http
+GET /api/blob/content?container=photos&name=2025/11/photo.jpg
+```
+
 PowerShell examples
 
 Local sort:
@@ -210,13 +247,23 @@ Blob browse and upload:
 ```powershell
 Invoke-RestMethod -Method Get http://localhost:5148/api/blob/containers
 Invoke-RestMethod -Method Get "http://localhost:5148/api/blob/prefixes?container=photos"
-Invoke-RestMethod -Method Get "http://localhost:5148/api/blob/prefixes/all?container=photos"
 Invoke-RestMethod -Method Get "http://localhost:5148/api/blob/list?container=photos&prefix=incoming/2025/11"
 ```
 
 ```powershell
 $form = @{ container='photos'; prefix='incoming/2025/11' }
 Invoke-RestMethod -Method Post -Uri http://localhost:5148/api/upload/blob -Form $form -InFile 'C:\\temp\\image.jpg' -ContentType 'multipart/form-data'
+```
+
+```powershell
+# Upload and persist metadata
+$form = @{ container='photos'; prefix='incoming/2025/11' }
+Invoke-RestMethod -Method Post -Uri http://localhost:5148/api/upload/blob-with-metadata -Form $form -InFile 'C:\\temp\\image.jpg' -ContentType 'multipart/form-data'
+```
+
+```powershell
+# Fetch content for inline display
+Invoke-WebRequest -OutFile photo.jpg "http://localhost:5148/api/blob/content?container=photos&name=2025/11/photo.jpg"
 ```
 
 Run the Console App
@@ -244,6 +291,22 @@ docker run -p 8080:8080 -p 8081:8081 -e "AzureStorage__ConnectionString=UseDevel
 
 When sorting local files in Docker, mount host directories as volumes and reference the mounted paths in requests.
 
+Run the Web App (Angular)
+
+Development:
+
+```bash
+cd ImageSorting.Web
+npm install
+npm start
+# Opens http://localhost:4200 with a dev proxy to http://localhost:5148/api
+```
+
+Notes:
+
+- The dev proxy (`ImageSorting.Web/proxy.conf.json`) forwards `/api` to the API base URL, avoiding CORS in development.
+- Ensure the API is running on `http://localhost:5148` (default launch profile) or update the proxy target accordingly.
+
 Repository Hygiene
 
 - Ignore IDE and build artifacts (`.vs/`, `bin/`, `obj/`).
@@ -261,8 +324,9 @@ Current Status
 
 - Local sort endpoint `/api/sort-images` implemented.
 - Blob browse endpoints: `/api/blob/containers`, `/api/blob/prefixes`, `/api/blob/list`.
-- Blob upload endpoint `/api/upload/blob`.
+- Blob upload endpoint `/api/upload/blob` and upload-with-metadata `/api/upload/blob-with-metadata`.
 - Blob sort endpoint `/api/sort-images/blob` with optional move and log.
+- Blob content streaming endpoint `/api/blob/content`.
 
 Roadmap / Next Steps
 

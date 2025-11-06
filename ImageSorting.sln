@@ -5,12 +5,15 @@ VisualStudioVersion = 17.9.34723.18
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageSorting", "ImageSorting\ImageSorting.csproj", "{825E0AD0-ACB7-4F6D-9D26-48E5B2B1899A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageSorting.Core", "ImageSorting.Core\ImageSorting.Core.csproj", "{9E54EF8E-03CE-4626-A907-19FFE3BA3858}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageSorting.Core", "ImageSorting.Core\ImageSorting.Core.csproj", "{9E54EF8E-03CE-4626-A907-19FFE3BA3858}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageSorting.API", "ImageSorting.API\ImageSorting.API.csproj", "{7661510F-80B1-4C1D-BC3A-B4BF225498FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageSorting.API", "ImageSorting.API\ImageSorting.API.csproj", "{7661510F-80B1-4C1D-BC3A-B4BF225498FC}"
 	ProjectSection(ProjectDependencies) = postProject
 		{9E54EF8E-03CE-4626-A907-19FFE3BA3858} = {9E54EF8E-03CE-4626-A907-19FFE3BA3858}
+		{D1D93CA3-62C9-4791-8544-9E3CFAB9315A} = {D1D93CA3-62C9-4791-8544-9E3CFAB9315A}
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageSorting.Data", "ImageSorting.Data\ImageSorting.Data.csproj", "{D1D93CA3-62C9-4791-8544-9E3CFAB9315A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,6 +33,10 @@ Global
 		{7661510F-80B1-4C1D-BC3A-B4BF225498FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7661510F-80B1-4C1D-BC3A-B4BF225498FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7661510F-80B1-4C1D-BC3A-B4BF225498FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1D93CA3-62C9-4791-8544-9E3CFAB9315A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1D93CA3-62C9-4791-8544-9E3CFAB9315A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1D93CA3-62C9-4791-8544-9E3CFAB9315A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1D93CA3-62C9-4791-8544-9E3CFAB9315A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

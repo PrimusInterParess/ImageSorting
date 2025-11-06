@@ -3,6 +3,9 @@ using ImageSorting.Core;
 using ImageSorting.Core.Interfaces;
 using ImageSorting.Core.Options;
 using ImageSorting.Core.Services;
+using ImageSorting.Data;
+using Microsoft.EntityFrameworkCore;
+using ImageSorting.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +15,8 @@ builder.Services.AddControllers();
 
 builder.Services.Configure<SortingOptions>(builder.Configuration.GetSection("Sorting"));
 builder.Services.AddScoped<IImageSortingService, ImageSortingService>();
+builder.Services.AddScoped<IFileMetadataService, FileMetadataService>();
+builder.Services.AddScoped<IUploadOrchestrationService, UploadOrchestrationService>();
 
 var connectionString = builder.Configuration["AzureStorage:ConnectionString"];
 if (!string.IsNullOrWhiteSpace(connectionString))
@@ -27,7 +32,8 @@ else
 builder.Services.AddScoped<IBlobImageSortingService, BlobImageSortingService>();
 builder.Services.AddScoped<IBlobUploadService, BlobUploadService>();
 builder.Services.AddScoped<IBlobBrowseService, BlobBrowseService>();
-
+builder.Services.AddDbContext<ImageSortingContext>(o =>
+    o.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 var app = builder.Build();
 
 app.UseSwagger();
