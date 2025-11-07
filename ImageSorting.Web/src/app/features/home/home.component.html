@@ -1,0 +1,40 @@
+<!-- <div *ngIf="loading">Loading...</div> -->
+
+<div class="folders">
+    <h3>Folders</h3>
+    <div *ngIf="prefixes?.length; else noFoldersTpl" class="folder-grid">
+        <div class="folder-card" *ngFor="let p of prefixes" (click)="openFolder(p)" tabindex="0" role="button"
+            [attr.aria-label]="'Open folder ' + displaySegment(p)">
+            <div class="folder-tab"></div>
+            <div class="folder-body">
+                <span class="folder-name">{{ displaySegment(p) }}</span>
+            </div>
+        </div>
+    </div>
+    <ng-template #noFoldersTpl>
+        <div class="no-folders">No folders</div>
+    </ng-template>
+</div>
+
+<div class="items-scroll" *ngIf="items?.length">
+    <div class="grid">
+        <div class="card" *ngFor="let it of items | slice:0:visibleCount">
+            <div class="thumb">
+                <video *ngIf="isVideo(it.name); else imgTpl" #vid [src]="contentUrl(it.name)" controls [muted]="true"
+                    preload="metadata" playsinline (mouseenter)="hoverEnter(it.name, vid)"
+                    (mouseleave)="hoverLeave(it.name, vid)"></video>
+                <ng-template #imgTpl>
+                    <img [src]="contentUrl(it.name)" [alt]="it.name" loading="lazy" />
+                </ng-template>
+                <div class="overlay">
+                    <span class="filename">{{ it.name }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="load-more-wrap" *ngIf="(items?.length || 0) > visibleCount">
+    <button class="load-more" (click)="visibleCount = visibleCount + pageSize" [disabled]="loading">Load more</button>
+    <div class="count">Showing {{ visibleCount }} of {{ items.length }}</div>
+</div>

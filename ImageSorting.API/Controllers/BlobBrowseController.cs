@@ -15,6 +15,13 @@ namespace ImageSorting.API.Controllers
 			_browseService = browseService;
 		}
 
+		[HttpGet("containers")]
+		public async Task<ActionResult<ContainerListResponse>> ListContainersAsync(CancellationToken ct)
+		{
+			var items = await _browseService.ListContainersAsync(ct);
+			return Ok(new ContainerListResponse(items.Count, items));
+		}
+
 		[HttpGet("list")]
 		public async Task<ActionResult<BlobListResponse>> ListAsync([FromQuery] string container, [FromQuery] string? prefix, CancellationToken ct)
 		{
@@ -27,13 +34,6 @@ namespace ImageSorting.API.Controllers
 			return Ok(result);
 		}
 
-		[HttpGet("containers")]
-		public async Task<ActionResult<ContainerListResponse>> ListContainersAsync(CancellationToken ct)
-		{
-			var items = await _browseService.ListContainersAsync(ct);
-			return Ok(new ContainerListResponse(items.Count, items));
-		}
-
 		[HttpGet("prefixes")]
 		public async Task<ActionResult<PrefixListResponse>> ListPrefixesAsync([FromQuery] string container, [FromQuery] string? prefix, CancellationToken ct)
 		{
@@ -43,6 +43,7 @@ namespace ImageSorting.API.Controllers
 			}
 
 			var items = await _browseService.ListPrefixesAsync(container, prefix, ct);
+
 			return Ok(new PrefixListResponse(items.Count, items));
 		}
 

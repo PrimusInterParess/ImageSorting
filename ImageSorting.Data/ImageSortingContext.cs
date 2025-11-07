@@ -8,6 +8,7 @@ namespace ImageSorting.Data
         public ImageSortingContext(DbContextOptions<ImageSortingContext> options) : base(options) { }
         public DbSet<Entities.File> Files { get; set; }
         public DbSet<FileMetadata> FileMetadata { get; set; }
+        public DbSet<Container> Containers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -15,6 +16,7 @@ namespace ImageSorting.Data
 
             var image = modelBuilder.Entity<Entities.File>();
             var metadata = modelBuilder.Entity<FileMetadata>();
+            var container = modelBuilder.Entity<Container>();
 
             image.HasKey(x => x.Id).IsClustered();
             image.Property(x => x.Id).ValueGeneratedOnAdd();
@@ -33,6 +35,11 @@ namespace ImageSorting.Data
                 .WithOne(x => x.File)
                 .HasForeignKey<FileMetadata>(x => x.FileId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            container.HasKey(x => x.Id).IsClustered();
+            container.Property(x => x.Id).ValueGeneratedOnAdd();
+            container.Property(x => x.Name).IsRequired().HasMaxLength(63);
+            container.HasIndex(x => x.Name).IsUnique();
         }
     }
 }

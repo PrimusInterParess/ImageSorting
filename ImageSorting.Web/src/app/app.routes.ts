@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
-	{ path: '', loadComponent: () => import('./features/upload/upload.component').then(m => m.UploadComponent) },
-	{ path: 'gallery', loadComponent: () => import('./features/gallery/gallery.component').then(m => m.GalleryComponent) }
-];
+	{ path: '', loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent) },
+	{ path: 'upload', loadComponent: () => import('./features/upload/upload.component').then(m => m.UploadComponent) },
+]

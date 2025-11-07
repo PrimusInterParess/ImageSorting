@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { UploadService, BlobUploadItemWithMetadata } from '../../core/upload.service';
-import { debounce } from 'rxjs';
+import { UploadService } from '../../core/upload.service';
+import { BlobUploadItemWithMetadata } from '../../core/models/blob/blob-upload-item-with-metadata.dto';
 
 @Component({
   selector: 'app-upload',
@@ -26,7 +26,7 @@ import { debounce } from 'rxjs';
       </div>
       <div>
         <button type="submit" [disabled]="uploading || !container || selectedFiles.length === 0">Upload</button>
-        <a [routerLink]="['/gallery']" style="margin-left:1rem">View Gallery</a>
+        <a [routerLink]="['/']" style="margin-left:1rem">View Gallery</a>
       </div>
     </form>
 

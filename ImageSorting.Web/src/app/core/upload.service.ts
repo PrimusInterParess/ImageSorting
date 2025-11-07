@@ -1,46 +1,21 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { BlobUploadWithMetadataResponse } from './models/blob/blob-upload-withmetadata-response.dto';
+import { BlobListResponse } from './models/blob/blob-list-response';
+import { ContainerListResponse } from './models/container/container-lists-response';
 
-export interface FileMetadataDto {
-	bestDateTakenUtc?: string | null;
-	bestDateSource?: string | null;
-	width?: number | null;
-	height?: number | null;
-	cameraMake?: string | null;
-	cameraModel?: string | null;
-	contentType?: string | null;
-	extension?: string | null;
-}
-
-export interface BlobUploadItemWithMetadata {
-	blobName: string;
-	metadata: FileMetadataDto;
-}
-
-export interface BlobUploadWithMetadataResponse {
-	uploaded: number;
-	items: BlobUploadItemWithMetadata[];
-}
-
-export interface BlobItemInfo {
-	name: string;
-	size?: number | null;
-	contentType?: string | null;
-	lastModified?: string | null;
-}
-
-export interface BlobListResponse {
+export interface PrefixListResponse {
 	count: number;
-	items: BlobItemInfo[];
+	items: string[];
 }
 
 @Injectable({
-  providedIn: 'root'
+	providedIn: 'root'
 })
 export class UploadService {
 
-	constructor(private readonly http: HttpClient) {}
+	constructor(private readonly http: HttpClient) { }
 
 	upload(container: string, prefix: string | null, files: File[]): Observable<BlobUploadWithMetadataResponse> {
 		const form = new FormData();
@@ -60,4 +35,16 @@ export class UploadService {
 		const p = new URLSearchParams({ container, name });
 		return `/api/blob/content?${p.toString()}`;
 	}
+
+	listContainers(): Observable<ContainerListResponse> {
+		return this.http.get<ContainerListResponse>('/api/blob/containers');
+	}
+
+	listPrefixes(container: string, prefix?: string | null): Observable<PrefixListResponse> {
+		let params = new HttpParams().set('container', container);
+		if (prefix) { params = params.set('prefix', prefix); }
+		return this.http.get<PrefixListResponse>('/api/blob/prefixes', { params });
+	}
+
+
 }

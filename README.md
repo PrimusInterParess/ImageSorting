@@ -134,6 +134,16 @@ Response:
 { "count": 3, "items": ["2024", "2025/01 - January", "raw"] }
 ```
 
+GET /api/blob/prefixes/all?container={name}
+
+- Lists all prefixes recursively under the container.
+
+Response:
+
+```json
+{ "count": 12, "items": ["2024", "2024/01 - January" /* ... */] }
+```
+
 GET /api/blob/list?container={name}&prefix={optional}
 
 Response:
@@ -146,6 +156,40 @@ Response:
     { "name": "2025/11/video.mp4", "size": 987654, "contentType": "video/mp4", "lastModified": "2025-11-05T11:00:00+00:00" }
   ]
 }
+```
+
+API – Managed containers (DB-backed)
+
+- Manage a list of logical containers persisted in the database. Creating a managed container also ensures the Azure Storage container exists.
+
+GET /api/containers
+
+Response:
+
+```json
+[
+  { "id": 1, "name": "photos", "dateCreatedUtc": "2025-11-07T09:50:00Z" }
+]
+```
+
+POST /api/containers
+
+Request:
+
+```json
+{ "name": "photos" }
+```
+
+Behavior:
+
+- Validates name (3–63 chars, lowercase letters/numbers/hyphens, must start/end with alphanumeric, no "--").
+- Creates the Azure container if it does not exist.
+- Persists a row in the `Containers` table; 409 if it already exists.
+
+Response:
+
+```json
+{ "id": 1, "name": "photos", "dateCreatedUtc": "2025-11-07T09:50:00Z" }
 ```
 
 API – Azure Blob upload
@@ -163,6 +207,10 @@ Response:
 ```json
 { "uploaded": 3, "items": ["incoming/2025/11/a.jpg", "incoming/2025/11/b.jpg", "incoming/2025/11/c.jpg"] }
 ```
+
+Notes:
+
+- Default request size limit is 500 MB per request (configurable in code).
 
 POST /api/upload/blob-with-metadata (multipart/form-data)
 
@@ -264,6 +312,13 @@ Invoke-RestMethod -Method Post -Uri http://localhost:5148/api/upload/blob-with-m
 ```powershell
 # Fetch content for inline display
 Invoke-WebRequest -OutFile photo.jpg "http://localhost:5148/api/blob/content?container=photos&name=2025/11/photo.jpg"
+```
+
+Managed containers:
+
+```powershell
+Invoke-RestMethod -Method Get http://localhost:5148/api/containers
+Invoke-RestMethod -Method Post -ContentType 'application/json' -Uri http://localhost:5148/api/containers -Body (@{ name='photos' } | ConvertTo-Json)
 ```
 
 Run the Console App
